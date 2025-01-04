@@ -1,0 +1,10 @@
+fastapi
+psycopg2
+pydantic
+pydantic-settings
+python-dotenv
+SQLAlchemy
+uvicorn
+pytest
+sqlmodel
+httpx
