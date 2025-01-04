@@ -29,13 +29,15 @@ server = FastAPI()
 
 # Dependency
 def get_db():
-    # Create the db schema, if needed, before starting a session.
-    # This is a workaround for an issue where the FastAPI server
-    # may be started before the Postgresql db is ready.
-    # I didn't manage to solve this in the docker-compose compose.yml file.
-    # The healtcheck configuration doesn't seem to work.
+    """
+    Create the db schema, if needed, before starting a session.
+    This is a workaround for an issue where the FastAPI server
+    may be started before the Postgresql db is ready.
+    I didn't manage to solve this in the docker-compose compose.yml file.
+    The healtcheck configuration doesn't seem to work.
+    """
     LazyDbInit.initialize()
-    db = SessionLocal()
+    db = SessionLocal
     try:
         yield db
     finally:
@@ -46,18 +48,23 @@ def get_db():
 async def reservation_mockup(item: Item):
     """ Mockup of the reservation API endpoint to make the code runnable. """
     time.sleep(20)
-    print("reservation mockup finished")
     return {'reservation_id': random.randint(1, 10000)}
 
 
-async def call_reservation_api(item: Item):
+async def call_reservation_api(item: Item, db: Session):
     """Background task to call the external reservation API."""
     url = "http://127.0.0.1:8000/reserve"  # Replace with the actual API URL
     print(url)
     async with httpx.AsyncClient() as client:
         try:
-            response = await client.post(url, json=item.model_dump())
+            base_item = ItemBase.model_validate(item)
+            response = await client.post(url, json=base_item.model_dump())
             response.raise_for_status()
+            db_item = db.exec(select(Item).where(Item.id == item.id)).first()
+            db_item.reservation_id = response.json().get('reservation_id')
+            db.merge(db_item)
+            db.commit()
+
         except Exception as e:
             # Handle exceptions if needed
             print("Error during external API call:", e)
@@ -72,11 +79,11 @@ async def add_item(order: ItemBase, background_tasks: BackgroundTasks, db: Sessi
     db.add(db_item)
     db.commit()
     db.refresh(db_item)
-    background_tasks.add_task(call_reservation_api, order)
+    background_tasks.add_task(call_reservation_api, db_item, db)
     return db_item
 
 
-@server.get("/items", response_model=List[ItemBase])
+@server.get("/items", response_model=List[Item])
 async def get_item_list(db: Session = Depends(get_db)):
     """ Endpoint to get all items from the database (shopping cart). """
     return db.exec(select(Item)).all()

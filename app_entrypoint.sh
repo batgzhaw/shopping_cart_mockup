@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 if [ "$DEBUG" = "debugpy" ]
 then
   echo "Running in debug mode"
