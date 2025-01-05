@@ -30,7 +30,7 @@ The tests can be run by executing pytest in the working directory of the *server
 
 ## Remarks
 
-- I chose FastAPI because it provides async and background task capability, native database integration, and a good fit for minimal API applications.
+- I chose FastAPI because it provides async and background task capability, native database integration, out-of-the-box OpenAPI documentation, and a general good fit for minimal API applications.
 - The Docker Compose setup is intended to provide a single repository implementation of the minimal example that can be easily tested by the reviewers.
 - I replaced the use of SQLAlchemy in the boilerplate code because I wanted to be able to reuse the database models as definitions of the request bodies.
 - The FastAPI app could be deployed (e.g. on AWS Elastic Beanstalk) by adding a web server like nginx as an additional Docker container.
