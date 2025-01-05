@@ -4,7 +4,7 @@ The respository contains a minimal example of a shopping cart api.  The code is 
 Key features are:
 
 - Implementation based on Docker compose
-- A PostgreSQL database in a separate docker container for the purpose of a compact and runnable setup
+- A PostgresSQL database in a separate docker container for the purpose of a compact and runnable setup
 - A in-memory SQLite database used for integration tests
 
 ## Usage
